@@ -452,6 +452,8 @@ get_cursor_rel_lnum(
 {
     linenr_T	cursor = wp->w_cursor.lnum;
     linenr_T	retval = 0;
+    linenr_T  row = lnum;
+    return wp->w_wrow - row; //XXX:
 
 #ifdef FEAT_FOLDING
     if (hasAnyFolding(wp))

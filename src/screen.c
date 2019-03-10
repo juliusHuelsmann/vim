@@ -2701,7 +2701,7 @@ fold_line(
 	{
 	    int	    w = number_width(wp);
 	    long    num;
-	    char    *fmt = "%*ld ";
+	    char    *fmt = "o%*ld ";
 
 	    if (len > w + 1)
 		len = w + 1;
@@ -2711,14 +2711,21 @@ fold_line(
 		num = (long)lnum;
 	    else
 	    {
-		/* 'relativenumber', don't use negative numbers */
-		num = labs((long)get_cursor_rel_lnum(wp, lnum));
+		// Use the (nonnegative) distance between the cursor line and 
+		// the current line; more specifically
+		// abs( cursorLineInWindow - currentLineInWindow )
+		num = labs(wp->w_wrow - row);
+		
+		// In case the current line is selected  and both relative 
+		// numbering and 'normal' numbering is enabled, display 
+		// the line number instead of the uninformative '0'.
+		num = labs((long)get_cursor_rel_lnum(wp, row));
 		if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
 		{
 		    /* 'number' + 'relativenumber': cursor line shows absolute
 		     * line number */
 		    num = lnum;
-		    fmt = "%-*ld ";
+		    fmt = "o%-*ld ";
 		}
 	    }
 
@@ -3758,7 +3765,7 @@ win_line(
     /*
      * Repeat for the whole displayed line.
      */
-    for (;;)
+    for (long itPos=0;; itPos++)
     {
 #ifdef FEAT_CONCEAL
 	has_match_conc = 0;
@@ -3883,28 +3890,52 @@ win_line(
 			    || vim_strchr(p_cpo, CPO_NUMCOL) == NULL))
 		{
 		    /* Draw the line number (empty space after wrapping). */
-		    if (row == startrow
+		    if (1 || (
+				    row == startrow
 #ifdef FEAT_DIFF
-			    + filler_lines
+				    + filler_lines
 #endif
+				    )
 			    )
 		    {
 			long num;
 			char *fmt = "%*ld ";
 
-			if (wp->w_p_nu && !wp->w_p_rnu)
+			if (wp->w_p_nu && !wp->w_p_rnu) {
 			    /* 'number' + 'norelativenumber' */
 			    num = (long)lnum;
-			else
-			{
-			    /* 'relativenumber', don't use negative numbers */
-			    num = labs((long)get_cursor_rel_lnum(wp, lnum));
+			} else {
+			    // Use the (nonnegative) distance between the 
+			    // cursor line and the current line
+			    
+			    // The cursor's position relative to the first 
+			    // line that is displayed inside the currently 
+			    // visible part of the buffer.
+			    //const long cursorLineInWindow = wp->w_wrow;
+			    //const long currentLineInWindow = row;
+			    //num = labs(cursorLineInWindow - currentLineInWindow);
+			    num = labs(wp->w_wrow - row);
+			    //XXX: move the comments etc. to the function that performs the 
+			    //     folding etc computations. (get_cursor_rel_lnum
+			    //     In addition, introduce a setting that can be enabled or disabled 
+			    //     for switching between the 'normal' way of displaying relative
+			    //     // line numbers and the one that is newly implemented by me.
+
+			    // In case the current line is selected  and both relative numbering
+			    // and 'normal' numbering is enabled, display the line number instead
+			    // of the uninformative '0'.
 			    if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
 			    {
-				/* 'number' + 'relativenumber' */
+				/* 'number' + 'relativenumber': cursor line shows absolute 
+				 * line number */
 				num = lnum;
 				fmt = "%-*ld ";
 			    }
+			    //num = itPos;
+			    //num = wp->w_wrow;
+			    //num = wp->w_topline;
+			    //num= wp->w_ru_cursor.lnum;
+			    //num = wp->w_wrow;
 			}
 
 			sprintf((char *)extra, fmt,
