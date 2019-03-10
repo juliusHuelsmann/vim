@@ -7943,7 +7943,7 @@ nv_g_cmd(cmdarg_T *cap)
 	 * in a closed fold */
 	if (!curwin->w_p_wrap
 #ifdef FEAT_FOLDING
-		|| hasFolding(curwin->w_cursor.lnum, NULL, NULL)
+		|| 0 && hasFolding(curwin->w_cursor.lnum, NULL, NULL)
 #endif
 		)
 	{
@@ -7962,7 +7962,7 @@ nv_g_cmd(cmdarg_T *cap)
 	 * in a closed fold */
 	if (!curwin->w_p_wrap
 #ifdef FEAT_FOLDING
-		|| hasFolding(curwin->w_cursor.lnum, NULL, NULL)
+		|| 0 && hasFolding(curwin->w_cursor.lnum, NULL, NULL)
 #endif
 	   )
 	{

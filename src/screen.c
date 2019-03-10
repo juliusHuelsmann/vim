@@ -2701,7 +2701,7 @@ fold_line(
 	{
 	    int	    w = number_width(wp);
 	    long    num;
-	    char    *fmt = "o%*ld ";
+	    char    *fmt = "%*ld ";
 
 	    if (len > w + 1)
 		len = w + 1;
@@ -2725,7 +2725,7 @@ fold_line(
 		    /* 'number' + 'relativenumber': cursor line shows absolute
 		     * line number */
 		    num = lnum;
-		    fmt = "o%-*ld ";
+		    fmt = "%-*ld ";
 		}
 	    }
 
